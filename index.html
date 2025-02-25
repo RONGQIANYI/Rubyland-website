@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubyland</title>
+    <!-- 引入可爱字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+    <!-- 引入轮播图组件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #ffe6f2;
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            font-family: 'Bubblegum Sans', cursive;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 4em;
+            color: #ff69b4;
+            text-shadow: 3px 3px 0px #ffffff;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 轮播图样式 */
+        .swiper {
+            width: 100%;
+            height: 500px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 音乐控制器样式 */
+        .music-control {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .music-btn {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Bubblegum Sans', cursive;
+        }
+
+        /* 聊天界面样式 */
+        .chat-container {
+            margin-top: 30px;
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .user-message {
+            background-color: #e3e3e3;
+            margin-left: 20%;
+        }
+
+        .ruby-message {
+            background-color: #ffb6c1;
+            margin-right: 20%;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ff69b4;
+            border-radius: 25px;
+            font-family: inherit;
+        }
+
+        .chat-input button {
+            padding: 10px 20px;
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Rubyland</h1>
+
+        <!-- 轮播图 -->
+        <div class="swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide"><img src="IMAGE/1.JPG" alt="Ruby照片1"></div>
+                <div class="swiper-slide"><img src="IMAGE/2.JPG" alt="Ruby照片2"></div>
+                <div class="swiper-slide"><img src="IMAGE/3.JPG" alt="Ruby照片3"></div>
+                <div class="swiper-slide"><img src="IMAGE/4.JPG" alt="Ruby照片4"></div>
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+
+        <!-- 音乐控制 -->
+        <div class="music-control">
+            <button class="music-btn" onclick="toggleMusic()">播放音乐</button>
+            <audio id="bgMusic" preload="auto" loop>
+                <source src="music/music.mp3" type="audio/mp3">
+                您的浏览器不支持音频播放
+            </audio>
+        </div>
+
+        <!-- AI聊天界面 -->
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ruby-message">你好呀！我是Ruby，很高兴见到你！</div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="和Ruby聊天吧...">
+                <button onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入必要的脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <script>
+        // 初始化轮播图
+        const swiper = new Swiper('.swiper', {
+            loop: true,
+            pagination: {
+                el: '.swiper-pagination',
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            autoplay: {
+                delay: 3000,
+            },
+        });
+
+        // 改进的音乐控制
+        let isPlaying = false;
+        const music = document.getElementById('bgMusic');
+        const musicBtn = document.querySelector('.music-btn');
+
+        // 添加音频加载错误处理
+        music.addEventListener('error', function(e) {
+            console.error('音频加载错误:', e);
+            alert('音乐加载失败，请检查音频文件是否存在且格式正确');
+        });
+
+        async function toggleMusic() {
+            try {
+                if (isPlaying) {
+                    await music.pause();
+                    musicBtn.textContent = '播放音乐';
+                } else {
+                    // 尝试播放音乐
+                    const playPromise = music.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            musicBtn.textContent = '暂停音乐';
+                        }).catch(error => {
+                            console.error('播放失败:', error);
+                            alert('音乐播放失败，请检查音频文件或尝试点击页面');
+                        });
+                    }
+                }
+                isPlaying = !isPlaying;
+            } catch (error) {
+                console.error('音乐控制错误:', error);
+                alert('音乐控制出错，请刷新页面重试');
+            }
+        }
+
+        // 添加页面点击事件来解决自动播放限制
+        document.addEventListener('click', function() {
+            if (music.paused && !isPlaying) {
+                music.load(); // 重新加载音频
+            }
+        });
+
+        // AI聊天功能
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const API_KEY = 'sk-4803a4f2e78d4f3f8d74c27017b78200';  // 更新为新的API密钥
+
+        async function callDeepSeekAPI(message) {
+            try {
+                console.log('正在调用 API...');
+                const response = await fetch('https://api.deepseek.com/chat/completions', {  // 修改为正确的API地址
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: '你是一个可爱的小女孩Ruby，今年6岁。你说话要活泼可爱，喜欢用"呀"、"哦"、"诶嘿嘿"等语气词。'
+                            },
+                            {
+                                role: 'user',
+                                content: message
+                            }
+                        ],
+                        stream: false
+                    })
+                });
+
+                console.log('API 响应状态:', response.status);
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error('API 错误详情:', errorData);
+                    throw new Error(`API调用失败: ${response.status} ${errorData}`);
+                }
+
+                const data = await response.json();
+                console.log('API 返回数据:', data);
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('API 调用详细错误:', error);
+                alert(`API 调用失败: ${error.message}`);
+                return generateRubyResponse(message); // 如果API失败，使用备用回复
+            }
+        }
+
+        function addMessage(message, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ruby-message'}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function generateRubyResponse(message) {
+            // 简单的回复逻辑，可以根据需要扩展
+            const responses = [
+                "诶嘿嘿~这个问题好有趣呀！",
+                "啊！我也超喜欢这个呢！",
+                "让我想想哦...",
+                "真的吗？好开心！",
+                "我们一起玩吧！"
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                messageInput.value = '';
+                
+                // 显示正在输入状态
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message ruby-message';
+                typingDiv.textContent = '正在输入...';
+                chatMessages.appendChild(typingDiv);
+                
+                try {
+                    const response = await callDeepSeekAPI(message);
+                    // 移除"正在输入"消息
+                    chatMessages.removeChild(typingDiv);
+                    // 添加AI回复
+                    addMessage(response, false);
+                } catch (error) {
+                    // 移除"正在输入"消息
+                    chatMessages.removeChild(typingDiv);
+                    // 使用备用回复
+                    addMessage(generateRubyResponse(message), false);
+                }
+            }
+        }
+
+        // 添加正在输入的样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes typing {
+                0% { opacity: 0.3; }
+                50% { opacity: 1; }
+                100% { opacity: 0.3; }
+            }
+            .ruby-message:last-child {
+                animation: typing 1.5s infinite;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 按回车发送消息
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html> 
